@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+
+</head>
+<body>
+
+    <div class="container">
+
+        <!-- este form lo utilizo para introducir el id del coche ya asi decirle a la api que coche deseo modificar -->
+        <form action="https://bbdd.lhdevsolutions.net:50500/api/personas" id="form" class="my-4">
+            <div class="mb-3">
+                <label for="id" class="form-label">Introduce el id del coche que deseas modificar</label>
+                <input type="text" class="form-control" name="id" id="id">
+            </div>
+            <button type="button" class="btn btn-primary" onclick="recibir()">Buscar</button>
+        </form><br><br>
+        
+        <!-- un ana vez tengo los campos del coche ingresados en este form, los puedo modificar siguiendo ciertas reglas que se validan en una funcion -->
+        <form id="form-modify" action="https://bbdd.lhdevsolutions.net:50500/api/personas" onsubmit="comprobar(event)">
+            <div class="mb-3">
+                <label for="marca" class="form-label">Marca:</label>
+                <input type="text" class="form-control" name="marca" id="marca" required>
+                <label for="modelo" class="form-label">Modelo:</label>
+                <input type="text" class="form-control" name="modelo" id="modelo" required>
+                <label for="km" class="form-label">Km:</label>
+                <input type="number" class="form-control" name="km" id="km">
+                <label for="precio" class="form-label">Precio:</label>
+                <input type="number" class="form-control" name="precio" id="precio">
+            </div>
+            <input type="submit" value="Modificar" class="btn btn-primary">
+            <br><br>
+            <!-- en este div muestro un mensaje de error si no se siguen las reglas -->
+            <div id="errorDiv">
+
+            </div>
+        </form>
+    </div>
+    
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+    <script>
+
+    //en este form modificas los valores 
+    function  modificar() {
+        const form = document.getElementById("form");
+        const formmodify = document.getElementById("form-modify");
+
+        const marca = formmodify.marca.value;
+        const modelo = formmodify.modelo.value;
+        const km = formmodify.km.value;
+        const precio = formmodify.precio.value;
+
+        const id = form.id.value;
+
+        $.ajax({
+            url: "https://bbdd.lhdevsolutions.net:50500/api/coches/"+id,
+            method: "PUT",
+            data: JSON.stringify({ 
+                id:id,
+                marca: marca,
+                modelo:modelo,
+                km: km,
+                precio: precio,
+            }),
+            contentType: "application/json",
+            success: function(response) {
+                console.log("Registro actualizado con éxito");
+                window.location.replace("PedroEnrique_GayoVega.html");
+            },
+            error: function(xhr, status, error) {
+                console.error("Error al actualizar registro: " + error);
+            }
+        });
+    }
+
+    //esta funcion llama gracias al id al coche que se desea modificar e ingresa los valores actuales en el 2 form para poder modificarlos
+    function recibir(){
+        const form= document.getElementById("form");
+        const formmodify= document.getElementById("form-modify");
+        const id = form.id.value;
+        $(document).ready(function(){
+            //console.log(JSON.stringify(unObjeto));
+            $.get("https://bbdd.lhdevsolutions.net:50500/api/coches/"+id, function(data, status){
+                formmodify.marca.value = data.marca;
+                formmodify.modelo.value = data.modelo;
+                formmodify.km.value = data.km;
+                formmodify.precio.value = data.precio;
+            });
+        });
+    }
+
+    //esta funcion hace las validaciones y no permite añadir en la api si no cumple los requisitos
+    function comprobar(event) {
+
+        event.preventDefault();
+
+        const formulario= document.getElementById("form-modify");
+
+        if(formulario.km.value < 0 || formulario.precio.value==0 || formulario.precio.value < 0 ){
+            error();
+        }else{
+            modificar()
+        }
+
+    }
+
+    //en el caso de que no los cumpla esta funcion muestra un mensaje de error en el div mencionado previmente
+    function error() {
+        let error=document.createElement("span");
+        error.setAttribute("id","error");
+        error.innerHTML="Los valores introducidos son erroneos, por favor pruebe otra vez";
+        error.style.color="red";
+        document.getElementById("errorDiv").appendChild(error);
+    }
+
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script>
+</body>
+</html>
